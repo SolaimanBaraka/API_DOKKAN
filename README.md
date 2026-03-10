@@ -7,7 +7,7 @@ API REST no oficial para Dragon Ball Z: Dokkan Battle.
 
 ##  Inicio rpido
 
-### Opcin A  Local (desarrollo, SQLite)
+### Opcion A  Local (desarrollo, SQLite)
 ```bash
 pip install -r requirements.txt
 cp .env.example .env          # opcional, usa SQLite por defecto
@@ -18,7 +18,7 @@ uvicorn app.main:app --reload
 
 ---
 
-### Opcin B  Docker (produccin, PostgreSQL)
+### Opcion B  Docker (produccin, PostgreSQL)
 ```bash
 cp .env.example .env
 # Edita .env con tu contrasea de PostgreSQL
