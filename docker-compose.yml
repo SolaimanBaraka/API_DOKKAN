@@ -1,0 +1,83 @@
+services:
+
+  #  Base de datos PostgreSQL 
+  db:
+    image: postgres:16-alpine
+    container_name: dokkan_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       ${POSTGRES_DB:-dokkan}
+      POSTGRES_USER:     ${POSTGRES_USER:-dokkan}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dokkan_pass}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"          # Expuesto solo en desarrollo; quitar en prod
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-dokkan} -d ${POSTGRES_DB:-dokkan}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  #  API FastAPI 
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: dokkan_api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      APP_ENV:           production
+      POSTGRES_HOST:     db
+      POSTGRES_PORT:     5432
+      POSTGRES_DB:       ${POSTGRES_DB:-dokkan}
+      POSTGRES_USER:     ${POSTGRES_USER:-dokkan}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dokkan_pass}
+      SYNC_ENABLED:      ${SYNC_ENABLED:-true}
+      SYNC_TIME_UTC:     ${SYNC_TIME_UTC:-03:00}
+      SYNC_RARITIES:     ${SYNC_RARITIES:-LR,UR}
+      SYNC_MAX_CARDS:    ${SYNC_MAX_CARDS:-300}
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    volumes:
+      - ./logs:/app/logs    # logs persistentes (opcional)
+
+  #  Scheduler independiente (opcional) 
+  # Descomenta este servicio si prefieres el scheduler separado de la API.
+  # Por defecto el scheduler ya corre dentro del proceso de la API.
+  #
+  # scheduler:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   container_name: dokkan_scheduler
+  #   restart: unless-stopped
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+  #   environment:
+  #     APP_ENV:           production
+  #     POSTGRES_HOST:     db
+  #     POSTGRES_PORT:     5432
+  #     POSTGRES_DB:       ${POSTGRES_DB:-dokkan}
+  #     POSTGRES_USER:     ${POSTGRES_USER:-dokkan}
+  #     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dokkan_pass}
+  #     SYNC_ENABLED:      true
+  #     SYNC_TIME_UTC:     ${SYNC_TIME_UTC:-03:00}
+  #     SYNC_RARITIES:     ${SYNC_RARITIES:-LR,UR}
+  #     SYNC_MAX_CARDS:    ${SYNC_MAX_CARDS:-300}
+  #   command: ["python", "-m", "scraper.scheduler", "--run"]
+
+volumes:
+  postgres_data:
+    name: dokkan_postgres_data

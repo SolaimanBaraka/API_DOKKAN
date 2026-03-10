@@ -1,0 +1,21 @@
+# API
+fastapi==0.115.0
+uvicorn[standard]==0.30.0
+
+# Base de datos
+sqlalchemy==2.0.35
+alembic==1.13.3
+psycopg2-binary==2.9.10   # PostgreSQL (production)
+
+# Validacin
+pydantic==2.9.2
+
+# Scraper
+requests==2.32.3
+beautifulsoup4==4.12.3
+
+# Scheduler
+apscheduler==3.10.4
+
+# Config
+python-dotenv==1.0.1
