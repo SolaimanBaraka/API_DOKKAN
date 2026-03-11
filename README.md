@@ -3,6 +3,15 @@
 API REST no oficial para Dragon Ball Z: Dokkan Battle.
 **Python + FastAPI + PostgreSQL + Docker + Sync automtico diario.**
 
+> **56 personajes seed incluidos** cubriendo todas las rarezas (N→LR) y tipos (AGL/TEQ/INT/STR/PHY).
+> Para obtener **todos los personajes del juego** usa los endpoints `/sync/` descritos abajo.
+
+### Fuentes de datos
+Los personajes pueden sincronizarse automáticamente desde:
+- 🔗 [DBZ Dokkan Battle Wiki (Fandom)](https://dbz-dokkanbattle.fandom.com/wiki/Category:Dokkan_Characters)
+- 🔗 [Dokkan.wiki (DokkanInfo)](https://dokkan.wiki/)
+- 🔗 [Dokkan.fyi](https://dokkan.fyi/characters)
+
 ---
 
 ##  Inicio rpido
@@ -49,14 +58,52 @@ DELETE /cards/{id}              Eliminar carta
 ```
 
 **Filtros en `/cards`:**
-| Parmetro | Valores |
+| Parámetro | Valores / Descripción |
 |-----------|---------|
 | `rarity` | N, R, SR, SSR, UR, LR |
 | `type` | AGL, TEQ, INT, STR, PHY |
+| `category` | Texto libre (ej: `Pure Saiyans`, `God Ki`) |
+| `link_skill` | Texto libre (ej: `Kamehameha`, `Golden Warrior`) |
 | `is_lr` | true / false |
 | `is_eza` | true / false |
 | `is_dokkan_fest` | true / false |
-| `page` + `per_page` | paginacin |
+| `is_transformable` | true / false |
+| `page` + `per_page` | paginación |
+
+### Endpoints de descubrimiento
+```
+GET  /cards/categories          Lista de todas las categorías únicas
+GET  /cards/link-skills         Lista de todos los link skills únicos
+```
+
+### Personajes incluidos en el seed (56 cartas)
+
+| Rareza | Cantidad | Tipos cubiertos |
+|--------|----------|----------------|
+| LR     | 16       | AGL, TEQ, INT, STR, PHY |
+| UR     | 13       | AGL, TEQ, INT, STR, PHY |
+| SSR    | 12       | AGL, TEQ, INT, STR, PHY |
+| SR     |  9       | AGL, TEQ, INT, STR, PHY |
+| R      |  4       | AGL, STR, INT |
+| N      |  2       | AGL, PHY |
+
+Personajes destacados incluidos: Ultra Instinct Goku, Gohan (Beast), Frieza (Golden), Cell (Perfect Form), Broly, Jiren (Full Power), Majin Vegeta, Future Gohan & Trunks, Fused Zamasu, Metal Cooler, Vegeta (SSB Evolved), y muchos más.
+
+### Cómo obtener TODOS los personajes
+
+```bash
+# Importar todas las cartas LR (aprox. 300+)
+curl -X POST "http://localhost:8000/sync/cards/rarity/LR?max_cards=400"
+
+# Importar todas las cartas UR
+curl -X POST "http://localhost:8000/sync/cards/rarity/UR?max_cards=400"
+
+# Importar SSR
+curl -X POST "http://localhost:8000/sync/cards/rarity/SSR?max_cards=400"
+
+# Sync completo automático (LR + UR configurados en .env)
+curl -X POST "http://localhost:8000/sync/run-now"
+```
 
 ### Otros recursos
 ```

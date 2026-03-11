@@ -168,11 +168,16 @@ def parse_card_page(wiki_title: str, fallback: dict = None) -> Optional[dict]:
     # ID de imagen para construir URL thumb
     thumb_m = re.search(r"Card[_ ](\d+)[_ ]thumb\.png", wikitext)
     image_url = None
+    thumb_url = None
     if thumb_m:
         fid = thumb_m.group(1)
         image_url = (
             f"https://static.wikia.nocookie.net/dbz-dokkanbattle/images/"
             f"thumb/Card_{fid}_thumb.png/120px-Card_{fid}_thumb.png"
+        )
+        thumb_url = (
+            f"https://static.wikia.nocookie.net/dbz-dokkanbattle/images/"
+            f"thumb/Card_{fid}_thumb.png/60px-Card_{fid}_thumb.png"
         )
 
     cost_raw = f("cost") or ""
@@ -204,7 +209,7 @@ def parse_card_page(wiki_title: str, fallback: dict = None) -> Optional[dict]:
     eza_sa_desc = _clean(f("EZA SA description") or "")
 
     eza_passive = f"{eza_ps_name}: {eza_ps_desc}".strip(": ") if (eza_ps_name or eza_ps_desc) else None
-    eza_sa      = f"{eza_sa_name}  {eza_sa_desc}".strip(" ") if (eza_sa_name or eza_sa_desc) else None
+    eza_sa      = f"{eza_sa_name}: {eza_sa_desc}".strip(": ") if (eza_sa_name or eza_sa_desc) else None
 
     # Medallas de despertar (Dokkan Awakening)
     medals = []
@@ -261,7 +266,7 @@ def parse_card_page(wiki_title: str, fallback: dict = None) -> Optional[dict]:
         "is_eza":        is_eza,
         "is_dokkan_fest": is_df,
         "image_url":     image_url,
-        "thumb_url":     image_url,
+        "thumb_url":     thumb_url,
         "wiki_url":      f"{WIKI_BASE}/wiki/{wiki_title.replace(' ', '_')}",
         "jp_release_date":  jp_date or None,
         "glb_release_date": glb_date or None,
