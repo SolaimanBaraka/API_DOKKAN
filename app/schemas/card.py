@@ -27,14 +27,20 @@ class CardCreate(CardBase):
     passive_skill: Optional[str] = None
     active_skill: Optional[str] = None
     active_skill_condition: Optional[str] = None
+    eza_leader_skill: Optional[str] = None
+    eza_passive_skill: Optional[str] = None
+    eza_super_attack: Optional[str] = None
     categories: Optional[str] = None
     link_skills: Optional[str] = None
+    awakening_medals: Optional[str] = None
     is_transformable: bool = False
     transforms_to_id: Optional[int] = None
+    transformation_conditions: Optional[str] = None
     is_eza: bool = False
     is_lr: bool = False
     is_dokkan_fest: bool = False
     image_url: Optional[str] = None
+    thumb_url: Optional[str] = None
     wiki_url: Optional[str] = None
 
 
@@ -44,7 +50,9 @@ class CardSummary(CardBase):
     is_lr: bool
     is_eza: bool
     is_dokkan_fest: bool
+    is_transformable: bool
     image_url: Optional[str] = None
+    thumb_url: Optional[str] = None
 
     model_config = {"from_attributes": True}
 
@@ -54,6 +62,7 @@ class CardDetail(CardCreate):
     id: int
     categories_list: Optional[List[str]] = None
     link_skills_list: Optional[List[str]] = None
+    awakening_medals_list: Optional[List[dict]] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
@@ -62,7 +71,7 @@ class CardDetail(CardCreate):
     @classmethod
     def model_validate(cls, obj, **kwargs):
         instance = super().model_validate(obj, **kwargs)
-        # Convertir JSON strings a listas
+        # Convertir JSON strings a listas/objetos
         if isinstance(obj.categories, str):
             try:
                 instance.categories_list = json.loads(obj.categories)
@@ -73,6 +82,11 @@ class CardDetail(CardCreate):
                 instance.link_skills_list = json.loads(obj.link_skills)
             except Exception:
                 instance.link_skills_list = []
+        if isinstance(obj.awakening_medals, str):
+            try:
+                instance.awakening_medals_list = json.loads(obj.awakening_medals)
+            except Exception:
+                instance.awakening_medals_list = []
         return instance
 
 
