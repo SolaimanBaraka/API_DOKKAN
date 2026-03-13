@@ -168,11 +168,16 @@ def parse_card_page(wiki_title: str, fallback: dict = None) -> Optional[dict]:
     # ID de imagen para construir URL thumb
     thumb_m = re.search(r"Card[_ ](\d+)[_ ]thumb\.png", wikitext)
     image_url = None
+    thumb_url = None
     if thumb_m:
         fid = thumb_m.group(1)
         image_url = (
             f"https://static.wikia.nocookie.net/dbz-dokkanbattle/images/"
             f"thumb/Card_{fid}_thumb.png/120px-Card_{fid}_thumb.png"
+        )
+        thumb_url = (
+            f"https://static.wikia.nocookie.net/dbz-dokkanbattle/images/"
+            f"thumb/Card_{fid}_thumb.png/60px-Card_{fid}_thumb.png"
         )
 
     cost_raw = f("cost") or ""
@@ -196,6 +201,27 @@ def parse_card_page(wiki_title: str, fallback: dict = None) -> Optional[dict]:
     passive       = f"{ps_name}: {ps_desc}".strip(": ")   if (ps_name or ps_desc) else None
     active        = f"{as_name}: {as_desc}".strip(": ")   if (as_name or as_desc) else None
 
+    # Habilidades EZA
+    eza_ls_desc = _clean(f("EZA LS description") or "")
+    eza_ps_name = _clean(f("EZA PS name") or "")
+    eza_ps_desc = _clean(f("EZA PS description") or "")
+    eza_sa_name = _clean(f("EZA SA name") or "")
+    eza_sa_desc = _clean(f("EZA SA description") or "")
+
+    eza_passive = f"{eza_ps_name}: {eza_ps_desc}".strip(": ") if (eza_ps_name or eza_ps_desc) else None
+    eza_sa      = f"{eza_sa_name}: {eza_sa_desc}".strip(": ") if (eza_sa_name or eza_sa_desc) else None
+
+    # Medallas de despertar (Dokkan Awakening)
+    medals = []
+    for i in range(1, 9):
+        medal_name = _clean(f(f"Awaken medal {i}") or "")
+        medal_qty  = _to_int(f(f"Awaken medal {i} qty"))
+        if medal_name:
+            medals.append({"name": medal_name, "quantity": medal_qty or 0})
+
+    # Condición de transformación
+    transform_cond = _clean(f("Transform condition") or f("Transformation condition") or "")
+
     categories  = _parse_list(f("Category") or "")
     link_skills = _parse_list(f("Link skill") or "")
 
@@ -203,6 +229,7 @@ def parse_card_page(wiki_title: str, fallback: dict = None) -> Optional[dict]:
     summon  = (f("Summon") or "").upper()
     is_df   = "DF" in summon
     is_eza  = bool(f("EZA PS description") or f("EZA LS description"))
+    is_transformable = bool(f("Transform condition") or f("Transformation condition") or f("Transform type"))
 
     jp_date  = (f("JPdate")  or "").strip()
     glb_date = (f("GLBdate") or "").strip()
@@ -227,13 +254,22 @@ def parse_card_page(wiki_title: str, fallback: dict = None) -> Optional[dict]:
         "passive_skill": passive,
         "active_skill":  active,
         "active_skill_condition": as_cond or None,
+        "eza_leader_skill":  eza_ls_desc or None,
+        "eza_passive_skill": eza_passive,
+        "eza_super_attack":  eza_sa,
         "categories":    json.dumps(categories),
         "link_skills":   json.dumps(link_skills),
+        "awakening_medals": json.dumps(medals) if medals else None,
+        "is_transformable": is_transformable,
+        "transformation_conditions": transform_cond or None,
         "is_lr":         is_lr,
         "is_eza":        is_eza,
         "is_dokkan_fest": is_df,
         "image_url":     image_url,
+        "thumb_url":     thumb_url,
         "wiki_url":      f"{WIKI_BASE}/wiki/{wiki_title.replace(' ', '_')}",
+        "jp_release_date":  jp_date or None,
+        "glb_release_date": glb_date or None,
     }
 
 
